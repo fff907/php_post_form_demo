@@ -266,6 +266,18 @@ MySQLデータベースに接続するためのファイルです。全ページ
     > `$conn->query("SET time_zone = '+09:00'");` とは？  
     > データベース内の時刻を日本時間に合わせる命令。これにより `created_at` などの日時が正しく表示されます。
 
+    > **`SELECT * FROM articles ORDER BY created_at DESC` の意味は？**  
+    > `SELECT *`：すべての列を取得  
+    > `FROM articles`：articles テーブルから  
+    > `ORDER BY created_at DESC`：作成日時（created_at）の降順（新しい順）で並べ替え  
+    >  
+    > 昇順（古い順）は `ASC`（Ascending）  
+    > 降順（新しい順）は `DESC`（Descending）  
+    >  
+    > **覚え方**：  
+    > - ASC：上がる → 古い順に積み重ねる  
+    > - DESC：下がる → 新しい順に落ちてくる（上に表示）
+
 - **ポイント**：
   - `htmlspecialchars()` でXSS対策
   - `nl2br()` により改行がHTML上で反映される
@@ -286,15 +298,41 @@ MySQLデータベースに接続するためのファイルです。全ページ
   ```
   → 1件ずつ連想配列で取り出し、`$row['title']` などでアクセス。
 
+    > **`<?php while ($row = $result->fetch_assoc()): ?>` の意味は？**  
+    > SQLの結果（$result）から、1件ずつ `$row` に取り出して処理するループ。  
+    > `fetch_assoc()` は **「カラム名をキーとした連想配列」** を返す。  
+    >  
+    > 例：  
+    > ```php
+    > $row = [
+    >   'id' => 1,
+    >   'title' => 'テスト記事',
+    >   'content' => '本文'
+    > ];
+    > ```
+
   ```php
   <a href="article.php?id=<?php echo $row['id']; ?>">
   ```
   → 各記事のタイトルをクリックすると `article.php` に遷移し、IDパラメータで個別記事を表示。
+
+    > **`article.php?id=<?php echo $row['id']; ?>` の意味は？**  
+    > `article.php?id=1` のような形で「IDパラメータ付きリンク」を生成。  
+    > このIDを使って、`article.php` 側で **該当記事だけを表示**する。
 
   ```php
   <form action="delete.php" method="post">
   ```    
 → 削除ボタンでPOST送信。`hidden` で記事IDを送信し、`delete.php` 側で処理。
 
+    > **`date("Y-m-d H:i:s", strtotime($row['created_at']))` の意味は？**    
+    > `created_at` は文字列の日付 → `strtotime()` でタイムスタンプ（数値）に変換  
+    > → `date()` で見やすい形式に整形  
+    >  
+    > 例：  
+    > ```php
+    > strtotime("2025-05-29 10:00:00") // → 秒数に変換  
+    > date("Y/m/d", ...) // → "2025/05/29"
+    > ```
 
 📌 **スキルデモはこちら → [http://news-portfolio.rf.gd/post_form.html]**
