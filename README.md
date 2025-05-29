@@ -383,4 +383,6 @@ MySQLデータベースに接続するためのファイルです。全ページ
   > - 🔸 **連想配列（associative array）**：名前で中身を取り出せる配列  
   > - 🔹 **IDパラメータ**：URLにくっついてデータを渡す仕組み（例：`?id=1`）  
   > - 🔸 **$row**：fetch_assoc() によって得られた「1件のデータのかたまり」  
+
 📌 **スキルデモはこちら → [http://news-portfolio.rf.gd/post_form.html]**
+
