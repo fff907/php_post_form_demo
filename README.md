@@ -249,3 +249,7 @@ MySQLデータベースに接続するためのファイルです。全ページ
   $conn->set_charset("utf8mb4");
   ```
   → データベースとPHP間の文字コードを `utf8mb4` に統一することで、文字化けを防止。**必須の設定項目。**
+
+
+
+📌 **スキルデモはこちら → [http://news-portfolio.rf.gd/post_form.html]**
