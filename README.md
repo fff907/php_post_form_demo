@@ -266,18 +266,6 @@ MySQLデータベースに接続するためのファイルです。全ページ
     > `$conn->query("SET time_zone = '+09:00'");` とは？  
     > データベース内の時刻を日本時間に合わせる命令。これにより `created_at` などの日時が正しく表示されます。
 
-    > **`SELECT * FROM articles ORDER BY created_at DESC` の意味は？**  
-    > `SELECT *`：すべての列を取得  
-    > `FROM articles`：articles テーブルから  
-    > `ORDER BY created_at DESC`：作成日時（created_at）の降順（新しい順）で並べ替え  
-    >  
-    > 昇順（古い順）は `ASC`（Ascending）  
-    > 降順（新しい順）は `DESC`（Descending）  
-    >  
-    > **覚え方**：  
-    > - ASC：上がる → 古い順に積み重ねる  
-    > - DESC：下がる → 新しい順に落ちてくる（上に表示）
-
 - **ポイント**：
   - `htmlspecialchars()` でXSS対策
   - `nl2br()` により改行がHTML上で反映される
@@ -292,6 +280,18 @@ MySQLデータベースに接続するためのファイルです。全ページ
   $result = $conn->query($sql);
   ```
   → 記事を新しい順（DESC）で取得。
+
+    > **`SELECT * FROM articles ORDER BY created_at DESC` の意味は？**  
+    > `SELECT *`：すべての列を取得  
+    > `FROM articles`：articles テーブルから  
+    > `ORDER BY created_at DESC`：作成日時（created_at）の降順（新しい順）で並べ替え  
+    >  
+    > 昇順（古い順）は `ASC`（Ascending）  
+    > 降順（新しい順）は `DESC`（Descending）  
+    >  
+    > **覚え方**：  
+    > - ASC：上がる → 古い順に積み重ねる  
+    > - DESC：下がる → 新しい順に落ちてくる（上に表示）
 
   ```php
   while ($row = $result->fetch_assoc()):
@@ -325,14 +325,14 @@ MySQLデータベースに接続するためのファイルです。全ページ
   ```    
 → 削除ボタンでPOST送信。`hidden` で記事IDを送信し、`delete.php` 側で処理。
 
-    > **`date("Y-m-d H:i:s", strtotime($row['created_at']))` の意味は？**    
-    > `created_at` は文字列の日付 → `strtotime()` でタイムスタンプ（数値）に変換  
-    > → `date()` で見やすい形式に整形  
-    >  
-    > 例：  
-    > ```php
-    > strtotime("2025-05-29 10:00:00") // → 秒数に変換  
-    > date("Y/m/d", ...) // → "2025/05/29"
-    > ```
+  > **`date("Y-m-d H:i:s", strtotime($row['created_at']))` の意味は？**    
+  > `created_at` は文字列の日付 → `strtotime()` でタイムスタンプ（数値）に変換  
+  > → `date()` で見やすい形式に整形  
+  >  
+  > 例：  
+  > ```php
+  > strtotime("2025-05-29 10:00:00") // → 秒数に変換  
+  > date("Y/m/d", ...) // → "2025/05/29"
+  > ```
 
 📌 **スキルデモはこちら → [http://news-portfolio.rf.gd/post_form.html]**
