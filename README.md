@@ -323,16 +323,36 @@ MySQLデータベースに接続するためのファイルです。全ページ
   ```php
   <form action="delete.php" method="post">
   ```    
-→ 削除ボタンでPOST送信。`hidden` で記事IDを送信し、`delete.php` 側で処理。
+  → 削除ボタンでPOST送信。`hidden` で記事IDを送信し、`delete.php` 側で処理。
+  
+  ```php
+  <p class="text-muted"><?php echo date("Y-m-d H:i:s", strtotime($row['created_at'])); ?></p>
+  ```
+  
+    > **`date("Y-m-d H:i:s", strtotime($row['created_at']))` の意味は？**    
+    > `created_at` は文字列の日付 → `strtotime()` でタイムスタンプ（数値）に変換  
+    > → `date()` で見やすい形式に整形  
+    >  
+    > 例：  
+    > ```php
+    > strtotime("2025-05-29 10:00:00") // → 秒数に変換  
+    > date("Y/m/d", ...) // → "2025/05/29"
+    > ```
 
-  > **`date("Y-m-d H:i:s", strtotime($row['created_at']))` の意味は？**    
-  > `created_at` は文字列の日付 → `strtotime()` でタイムスタンプ（数値）に変換  
-  > → `date()` で見やすい形式に整形  
-  >  
-  > 例：  
-  > ```php
-  > strtotime("2025-05-29 10:00:00") // → 秒数に変換  
-  > date("Y/m/d", ...) // → "2025/05/29"
-  > ```
+  ```php  
+  <p class="card-text"><?php echo nl2br(htmlspecialchars($row['content'])); ?></p>
+  ```
+  
+    > **`nl2br(htmlspecialchars($row['content']))` の意味は？**  
+    > - `htmlspecialchars()`：HTMLタグの表示用変換（XSS対策）  
+    > - `nl2br()`：改行文字 `\n` を `<br>` に変換 → **見た目上の改行が反映される**  
+    >  
+    > 例：  
+    > ```php
+    > $content = "こんにちは\n改行されます";
+    > echo nl2br(htmlspecialchars($content));
+    > // → こんにちは<br>改行されます
+    > ```
+
 
 📌 **スキルデモはこちら → [http://news-portfolio.rf.gd/post_form.html]**
