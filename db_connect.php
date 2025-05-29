@@ -3,7 +3,7 @@ $servername = "localhost";
 $username = "your_username";
 $password = "your_password";
 $dbname = "your_database";
-// 本番用は環境変数で管理
+// 実際のパスワードは本番環境にて安全に管理しています。
 
 // データベース接続
 $conn = new mysqli($servername, $username, $password, $dbname);
