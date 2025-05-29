@@ -250,6 +250,51 @@ MySQLデータベースに接続するためのファイルです。全ページ
   ```
   → データベースとPHP間の文字コードを `utf8mb4` に統一することで、文字化けを防止。**必須の設定項目。**
 
+### index.php
+
+記事の一覧を表示するメインページです。データベースから記事を取得し、Bootstrapで整えたカード形式で一覧表示します。
+
+- **使用技術**：PHP / MySQL / Bootstrap
+
+- **主な処理の流れ**：
+  - `db_connect.php` を読み込んでDB接続
+  - タイムゾーンを設定（+09:00＝日本時間）
+  - `SELECT * FROM articles` によって記事を取得
+  - 1件ずつ `fetch_assoc()` で取り出し、HTML内に出力
+  - 削除ボタン付き（`delete.php` にPOST）
+
+    > `SET time_zone = '+09:00'` とは？  
+    > データベース内の時刻を日本時間に合わせる命令。これにより `created_at` などの日時が正しく表示されます。
+
+- **ポイント**：
+  - `htmlspecialchars()` でXSS対策
+  - `nl2br()` により改行がHTML上で反映される
+  - Bootstrapによるシンプルなデザイン適用
+  - 投稿の個別ページへリンク → `article.php?id=...`
+  - 削除フォーム付き → `delete.php` にidを渡す構成
+
+- **コード解説**：
+
+  ```php
+  $sql = "SELECT * FROM articles ORDER BY created_at DESC";
+  $result = $conn->query($sql);
+  ```
+  → 記事を新しい順（DESC）で取得。
+
+  ```php
+  while ($row = $result->fetch_assoc()):
+  ```
+  → 1件ずつ連想配列で取り出し、`$row['title']` などでアクセス。
+
+  ```php
+  <a href="article.php?id=<?php echo $row['id']; ?>">
+  ```
+  → 各記事のタイトルをクリックすると `article.php` に遷移し、IDパラメータで個別記事を表示。
+
+  ```php
+  <form action="delete.php" method="post">
+  ```    
+→ 削除ボタンでPOST送信。`hidden` で記事IDを送信し、`delete.php` 側で処理。
 
 
 📌 **スキルデモはこちら → [http://news-portfolio.rf.gd/post_form.html]**
