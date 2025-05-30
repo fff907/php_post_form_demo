@@ -445,7 +445,7 @@ if (!$id) {
           <p><a href='index.php' class='btn btn-primary'><i class='bi bi-arrow-left'></i> 記事一覧へ戻る</a></p></div>");
 }
 ```
-→ 不正なIDだった場合、即終了しエラーメッセージを表示。
+→ `filter_input()` によって取得した `$id` が **0 や null（不正な値）**　だった場合、ここで処理を強制終了します。`exit()` 関数内にエラーメッセージ付きのHTMLを直接書くことで、その場で「記事が見つかりません」ページが表示される仕組みです。
 
 ```php
 $sql = "SELECT * FROM articles WHERE id = ?";
@@ -455,7 +455,23 @@ $stmt->execute();
 $result = $stmt->get_result();
 $article = $result->fetch_assoc();
 ```
-→ 対象記事の取得処理。プレースホルダ `?` に `$id` を差し込み、SQLインジェクションを防ぐ。
+→ `$sql` には「articles テーブルの中から id が一致するレコードを1件取り出す」というSQL文を記述します。`WHERE id = ?` の `?` は プレースホルダと呼ばれ、後から $id の値を差し込む場所になります。
+    - `$conn->prepare($sql)`
+  　→ SQL文を「準備」する。プリペアドステートメントとして安全に処理する準備段階です。
+  
+    - `$stmt->bind_param("i", $id)`
+  　→ `?` に実際の値（この場合は整数 `$id`）をバインドします。
+  　　`"i"` は整数（int）を意味しています。
+  
+    - `$stmt->execute()`
+  　→ SQL文をデータベースに送って実行します。ここで実際に検索が行われます。
+  
+    - `$stmt->get_result()`
+  　→ 検索された結果セットをオブジェクトとして取得します。
+  
+   -  `$result->fetch_assoc()`
+  　→ 結果セットから1行取り出し、連想配列として `$article` に格納します。
+  　　つまり `$article['title']` や `$article['content']` のように使えるようになります。
 
 ```php
 if (!$article) {
@@ -464,7 +480,7 @@ if (!$article) {
 }
 ?>
 ```
-→ 該当記事が存在しない場合のエラー処理。
+→ `$article` が false ＝記事が見つからなかった場合に、再び `exit()` で処理を終了し、エラー表示に切り替えます。
 
 ```html
 <input type="text" name="title" value="<?php echo htmlspecialchars($article['title']); ?>">
