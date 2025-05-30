@@ -547,7 +547,8 @@ if (!$id || !$title || !$content) {
     exit("エラー: すべての項目を入力してください。");
 }
 ```
-→ いずれかが未入力の場合は、処理を中断してエラーを表示。分かりやすく書くと`if (empty($id) || empty($title) || empty($content))`になる。
+→ いずれかが未入力の場合は、処理を中断してエラーを表示。  
+分かりやすく書くと`if (empty($id) || empty($title) || empty($content))`になる。
 
 ```php
 $sql = "UPDATE articles SET title = ?, content = ? WHERE id = ?";
