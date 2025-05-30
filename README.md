@@ -409,10 +409,10 @@ MySQLデータベースに接続するためのファイルです。全ページ
     > ```  
 
   > **用語補足まとめ**：  
-  > - 🔹 **カラム（column）**：テーブル内の「項目」（例：タイトル、本文、日付）  
-  > - 🔸 **連想配列（associative array）**：名前で中身を取り出せる配列  
-  > - 🔹 **IDパラメータ**：URLにくっついてデータを渡す仕組み（例：`?id=1`）  
-  > - 🔸 **$row**：fetch_assoc() によって得られた「1件のデータのかたまり」
+  > 🔹 **カラム（column）**：テーブル内の「項目」（例：タイトル、本文、日付）  
+  > 🔸 **連想配列（associative array）**：名前で中身を取り出せる配列  
+  > 🔹 **IDパラメータ**：URLにくっついてデータを渡す仕組み（例：`?id=1`）  
+  > 🔸 **$row**：fetch_assoc() によって得られた「1件のデータのかたまり」
 
 ### edit.php
 
@@ -458,7 +458,7 @@ $article = $result->fetch_assoc();
 → `$sql` には「articles テーブルの中から id が一致するレコードを1件取り出す」というSQL文を記述します。  
 `WHERE id = ?` の `?` は **プレースホルダ**と呼ばれ、後から `$id` の値を差し込む場所になります。
 
-- **`$conn->prepare($sql)`**  
+- **`$stmt = $conn->prepare($sql)`**  
   → SQL文を「準備」する。プリペアドステートメントとして安全に処理する準備段階です。
 
 - **`$stmt->bind_param("i", $id)`**  
@@ -468,10 +468,10 @@ $article = $result->fetch_assoc();
 - **`$stmt->execute()`**  
   → SQL文をデータベースに送って実行します。ここで実際に検索が行われます。
 
-- **`$stmt->get_result()`**  
+- **`$result = $stmt->get_result()`**  
   → 検索された結果セットをオブジェクトとして取得します。
 
-- **`$result->fetch_assoc()`**  
+- **`$article = $result->fetch_assoc()`**  
   → 結果セットから1行取り出し、**連想配列**として `$article` に格納します。  
 　  つまり `$article['title']` や `$article['content']` のように使えるようになります。
 
