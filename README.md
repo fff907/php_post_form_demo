@@ -601,4 +601,70 @@ if ($stmt->execute()) {
 > `UPDATE` も `INSERT` と同様、ユーザー入力を直接SQL文に埋め込むのはNGです。  
 > `?`（プレースホルダ）を使って安全に値をバインドすることで、SQLインジェクションを防いでいます。
 
+### delete.php
+
+指定された記事をデータベースから削除する処理を行うPHPファイルです。  
+基本的に `POST` メソッドで送信された `id` をもとに、対象記事を1件削除します。
+
+- **使用技術**：PHP / MySQL（filter_input / prepare / bind_param / header）
+
+- **主な構造**：
+  - `$_SERVER['REQUEST_METHOD']` でPOSTリクエストか確認
+  - `filter_input()` による `id` の安全な取得と検証
+  - `DELETE` 文のプリペアドステートメント
+  - 実行成功時は `index.php` にリダイレクト
+
+- **コード解説**：
+
+```php
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    exit("不正なアクセスです。");
+}
+```
+→ このファイルに対して `POST` 以外（GETなど）でアクセスされた場合は処理を中止。  
+フォーム経由でのリクエストのみを許可することで、意図しないアクセスを防ぎます。
+
+```php
+$id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
+
+if (!$id) {
+    exit("削除する記事が指定されていません！");
+}
+```
+→ `POST` データの中から `id` を取得し、整数として妥当か検証。  
+未入力や不正な形式だった場合はここで処理を止めます。
+
+```php
+$sql = "DELETE FROM articles WHERE id = ?";
+$stmt = $conn->prepare($sql);
+```
+→ 該当記事のIDに基づいて削除を行うSQL文を準備（プリペアドステートメント）。
+
+```php
+if (!$stmt) {
+    exit("SQLエラー: " . $conn->error);
+}
+```
+→ SQL準備が失敗した場合、エラー内容を表示して中断。
+
+```php
+$stmt->bind_param("i", $id);
+```
+→ `?` プレースホルダに整数型の `$id` をバインドします。
+
+```php
+if ($stmt->execute()) {
+    header("Location: index.php");
+    exit();
+} else {
+    exit("エラーが発生しました: " . $conn->error);
+}
+```
+→ 削除が成功した場合は一覧ページへリダイレクト。  
+失敗した場合はそのエラー内容を表示して終了します。
+
+> **セキュリティ補足**：  
+> このファイルは削除操作を伴うため、**GETによる実行は禁止**されています。  
+> そのため、`$_SERVER["REQUEST_METHOD"]` によるPOST制限は非常に重要です。
+
 📌 **スキルデモはこちら → [http://news-portfolio.rf.gd/post_form.html]**
