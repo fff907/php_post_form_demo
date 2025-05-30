@@ -481,7 +481,6 @@ if (!$article) {
           <p><a href='index.php' class='btn btn-primary'><i class='bi bi-arrow-left'></i> 記事一覧へ戻る</a></p></div>");
 }
 ```
-
 → `$article` は `$result->fetch_assoc()` によって取得された記事データの「連想配列」です。  
 この値が空（＝null または false）だった場合は、該当する記事がデータベース上に存在しないということを意味します。
 
@@ -491,10 +490,18 @@ if (!$article) {
 `exit()` の中には、Bootstrapで装飾されたHTMLが書かれており、  
 ユーザーには「記事が見つかりません」というメッセージと「戻る」ボタンが表示されます。
 
-```html
-<input type="text" name="title" value="<?php echo htmlspecialchars($article['title']); ?>">
+```php
+<form action="update.php" method="post">
+  <input type="hidden" name="id" value="<?php echo $article['id']; ?>">
 ```
+→ 編集対象の記事IDを `update.php` にPOSTで渡すための隠し入力欄。
 
+```html
+<div class="mb-3">
+    <label for="title" class="form-label">タイトル:</label>
+    <input type="text" id="title" name="title" value="<?php echo htmlspecialchars($article['title']); ?>" class="form-control" required>
+</div>
+```
 → `$article['title']` には、編集対象の記事のタイトルが格納されています。  
 この値を `<input>` フィールドの `value` 属性に挿入することで、**フォーム表示時にすでに入力済みのような状態**にできます。
 
@@ -507,7 +514,6 @@ HTMLとして解釈されず安全に表示されます。これは **XSS（ク�
     <textarea id="content" name="content" rows="5" class="form-control" required><?php echo htmlspecialchars($article['content']); ?></textarea>
 </div>
 ```
-
 → 本文のデータ `$article['content']` を `<textarea>` 要素の中に直接埋め込んで表示しています。  
 `textarea` は `<input>` と違い、`value=""` ではなく、**タグの中に値を挿入する形式**です。
 
