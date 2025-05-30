@@ -122,6 +122,17 @@
     > → これにより、重複読み込みのエラーを防げる（**特に複数のファイルが連携する大規模アプリでは重要**）。
 
   ```php
+  ini_set('display_errors', 1);
+  ini_set('display_startup_errors', 1);
+  error_reporting(E_ALL);
+  ```
+    > `ini_set`（イニセット）とは？  
+    > PHPの設定を「一時的に変更」する関数。  
+    > `'display_errors', 1` は「エラーを表示する」という意味。  
+    > 本番環境では通常 `0`（非表示）にする。  
+    > `error_reporting(E_ALL)` は「すべてのエラーを報告する」設定。
+
+  ```php
   $title = filter_input(INPUT_POST, 'title', FILTER_SANITIZE_STRING);
   $content = filter_input(INPUT_POST, 'content', FILTER_SANITIZE_STRING);
   ```
@@ -177,13 +188,7 @@
 
     > `$stmt` / `$conn` の意味は？        
     > `$stmt`：statement（文）の略。プリペアドステートメントを扱うオブジェクト。  
-    > `$conn`：connection（接続）の略。DBとの接続オブジェクト。 
-
-    > `ini_set`（イニセット）とは？  
-    > PHPの設定を「一時的に変更」する関数。  
-    > `'display_errors', 1` は「エラーを表示する」という意味。  
-    > 本番環境では通常 `0`（非表示）にする。  
-    > `error_reporting(E_ALL)` は「すべてのエラーを報告する」設定。  
+    > `$conn`：connection（接続）の略。DBとの接続オブジェクト。   
 
 ### db_connect.php
 
