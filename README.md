@@ -456,22 +456,24 @@ $result = $stmt->get_result();
 $article = $result->fetch_assoc();
 ```
 → `$sql` には「articles テーブルの中から id が一致するレコードを1件取り出す」というSQL文を記述します。  
-`WHERE id = ?` の `?` は プレースホルダと呼ばれ、後から $id の値を差し込む場所になります。  
+`WHERE id = ?` の `?` は **プレースホルダ**と呼ばれ、後から `$id` の値を差し込む場所になります。
 
-    > `$conn->prepare($sql)`  
-    > → SQL文を「準備」する。プリペアドステートメントとして安全に処理する準備段階です。  
-  
-    > `$stmt->bind_param("i", $id)`  
-  　> → `?` に実際の値（この場合は整数 `$id`）をバインドします。`"i"` は整数（int）を意味しています。  
-  
-    > `$stmt->execute()`  
-  　> → SQL文をデータベースに送って実行します。ここで実際に検索が行われます。  
-  
-    > `$stmt->get_result()`  
-  　> → 検索された結果セットをオブジェクトとして取得します。
-  
-    >  `$result->fetch_assoc()`  
-  　> → 結果セットから1行取り出し、連想配列として `$article` に格納します。つまり `$article['title']` や `$article['content']` のように使えるようになります。
+- **`$conn->prepare($sql)`**  
+  → SQL文を「準備」する。プリペアドステートメントとして安全に処理する準備段階です。
+
+- **`$stmt->bind_param("i", $id)`**  
+  → `?` に実際の値（この場合は整数 `$id`）をバインドします。  
+　  `"i"` は整数（int）を意味しています。
+
+- **`$stmt->execute()`**  
+  → SQL文をデータベースに送って実行します。ここで実際に検索が行われます。
+
+- **`$stmt->get_result()`**  
+  → 検索された結果セットをオブジェクトとして取得します。
+
+- **`$result->fetch_assoc()`**  
+  → 結果セットから1行取り出し、**連想配列**として `$article` に格納します。  
+　  つまり `$article['title']` や `$article['content']` のように使えるようになります。
 
 ```php
 if (!$article) {
@@ -480,7 +482,7 @@ if (!$article) {
 }
 ?>
 ```
-→ `$article` が false ＝記事が見つからなかった場合に、再び `exit()` で処理を終了し、エラー表示に切り替えます。
+→ `$article` が false ＝記事が見つからなかった場合に、`exit()` で処理を終了し、エラー表示に切り替えます。
 
 ```html
 <input type="text" name="title" value="<?php echo htmlspecialchars($article['title']); ?>">
