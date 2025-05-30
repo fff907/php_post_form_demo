@@ -527,7 +527,7 @@ HTMLとして解釈されず安全に表示されます。これは **XSS（ク�
 投稿編集フォームから送信されたデータを受け取り、MySQL上の既存レコードを更新するPHPファイルです。
 
 - **使用技術**：PHP / MySQL（filter_input / prepare / bind_param / header）
-- 
+
 - **主な構造**：
   - `filter_input()` による POSTデータの取得とバリデーション
   - DBに接続後、該当記事の `title`・`content` を更新
