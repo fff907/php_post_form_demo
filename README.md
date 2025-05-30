@@ -666,4 +666,62 @@ if ($stmt->execute()) {
 > このファイルは削除操作を伴うため、**GETによる実行は禁止**されています。  
 > そのため、`$_SERVER["REQUEST_METHOD"]` によるPOST制限は非常に重要です。
 
+### article.php
+
+個別の記事詳細を表示するページです。  
+URLパラメータから記事IDを取得し、その記事のタイトル・本文・投稿日時を表示します。
+
+- **使用技術**：PHP / MySQL / Bootstrap
+
+- **主な構造**：
+  - `filter_input()` でURLパラメータから `id` を取得・検証（GET）
+  - `SELECT` 文を使って1件のレコードを取得（idで指定）
+  - 該当記事がなければエラーメッセージを表示し処理終了
+  - タイトル・本文・投稿日時を画面に出力（エスケープ＋整形）
+  - 編集ボタン / 一覧に戻るボタンの表示も含む
+
+- **コード解説**：
+
+```php
+$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+```
+→ `GET` リクエストで受け取った `id` を、**整数型としてバリデーションしながら取得**。  
+これは`edit.php`と同様の安全な値の受け取り方法です。
+
+```php
+$sql = "SELECT * FROM articles WHERE id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $id);
+$stmt->execute();
+$result = $stmt->get_result();
+$article = $result->fetch_assoc();
+```
+→ 記事IDに基づいて該当する記事を1件取得します。  
+`fetch_assoc()` により `$article['title']`, `$article['content']` などで参照可能に。
+
+```php
+<h3 class="card-title"><?php echo htmlspecialchars($article['title']); ?></h3>
+<p class="card-text"><?php echo nl2br(htmlspecialchars($article['content'])); ?></p>
+```
+→ 表示の際も、**XSS（クロスサイトスクリプティング）対策としてエスケープ処理**を実施。  
+さらに `nl2br()` によって、本文内の改行もHTMLの `<br>` に変換されて表示されます。
+
+```php
+<p class="text-muted">
+  <i class="bi bi-clock"></i> 投稿日: <?php echo date("Y-m-d H:i:s", strtotime($article['created_at'])); ?>
+</p>
+```
+→ `created_at` をフォーマットして読みやすい形式で表示。  
+`strtotime()` により文字列→タイムスタンプに変換しています。
+
+```php
+<a href="edit.php?id=<?php echo $id; ?>" class="btn btn-warning">編集する</a>
+```
+→ 編集ページへ移動するためのリンク（**URLに `id` を引き継ぐ**）。  
+このように `edit.php?id=3` のような形式で使います。
+
+💡補足 
+- `nl2br()` は「New Line to BR」の略で、PHPの中で「改行を `<br>` に変換する関数」です。  
+- これは `textarea` に入力された改行を、そのまま表示画面に反映させたいときに使われます。
+
 📌 **スキルデモはこちら → [http://news-portfolio.rf.gd/post_form.html]**
