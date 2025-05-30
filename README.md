@@ -455,22 +455,23 @@ $stmt->execute();
 $result = $stmt->get_result();
 $article = $result->fetch_assoc();
 ```
-→ `$sql` には「articles テーブルの中から id が一致するレコードを1件取り出す」というSQL文を記述します。`WHERE id = ?` の `?` は プレースホルダと呼ばれ、後から $id の値を差し込む場所になります。
-    - `$conn->prepare($sql)`
-  　→ SQL文を「準備」する。プリペアドステートメントとして安全に処理する準備段階です。
+→ `$sql` には「articles テーブルの中から id が一致するレコードを1件取り出す」というSQL文を記述します。`WHERE id = ?` の `?` は プレースホルダと呼ばれ、後から $id の値を差し込む場所になります。  
+
+    - `$conn->prepare($sql)`  
+  　→ SQL文を「準備」する。プリペアドステートメントとして安全に処理する準備段階です。  
   
-    - `$stmt->bind_param("i", $id)`
-  　→ `?` に実際の値（この場合は整数 `$id`）をバインドします。
-  　　`"i"` は整数（int）を意味しています。
+    - `$stmt->bind_param("i", $id)`  
+  　→ `?` に実際の値（この場合は整数 `$id`）をバインドします。  
+  　　`"i"` は整数（int）を意味しています。  
   
-    - `$stmt->execute()`
-  　→ SQL文をデータベースに送って実行します。ここで実際に検索が行われます。
+    - `$stmt->execute()`  
+  　→ SQL文をデータベースに送って実行します。ここで実際に検索が行われます。  
   
-    - `$stmt->get_result()`
+    - `$stmt->get_result()`  
   　→ 検索された結果セットをオブジェクトとして取得します。
   
-   -  `$result->fetch_assoc()`
-  　→ 結果セットから1行取り出し、連想配列として `$article` に格納します。
+   -  `$result->fetch_assoc()`  
+  　→ 結果セットから1行取り出し、連想配列として `$article` に格納します。  
   　　つまり `$article['title']` や `$article['content']` のように使えるようになります。
 
 ```php
