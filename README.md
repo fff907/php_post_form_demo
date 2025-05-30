@@ -396,6 +396,75 @@ MySQLデータベースに接続するためのファイルです。全ページ
   > - 🔹 **カラム（column）**：テーブル内の「項目」（例：タイトル、本文、日付）  
   > - 🔸 **連想配列（associative array）**：名前で中身を取り出せる配列  
   > - 🔹 **IDパラメータ**：URLにくっついてデータを渡す仕組み（例：`?id=1`）  
-  > - 🔸 **$row**：fetch_assoc() によって得られた「1件のデータのかたまり」  
+  > - 🔸 **$row**：fetch_assoc() によって得られた「1件のデータのかたまり」
+
+### edit.php
+
+投稿済みの記事を編集するためのページ。  
+URLから渡されたIDに対応する記事を取得し、フォームに値を埋め込んで表示、更新処理は `update.php` に渡す構成です。
+
+- **使用技術**：PHP / MySQL（filter_input / prepare / bind_param など）
+
+- **主な構造**：
+  - `filter_input()` でURLパラメータ（id）を取得＋バリデーション
+  - 該当する記事が存在するかチェック（なければエラー表示）
+  - SQLの `SELECT` 文でデータベースから対象記事を取得
+  - `htmlspecialchars()` でフォーム内の文字をエスケープ
+  - 編集完了後は `update.php` にPOST送信
+
+    > **クエリパラメータとは？**  
+    > URLの `?id=3` のように、`?キー=値` の形式で渡すデータのこと。  
+    > `edit.php?id=3` のようにアクセスすることで、id=3 の記事を編集する意図を表す。
+
+#### コード解説
+
+```php
+$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+```
+→ GETパラメータ（URL）の `id` を整数として取得。正しくない場合は `false` になる。
+
+  > `filter_input`（フィルター・インプット）とは？  
+  > POST/GETデータを安全に取得する方法。  
+  > `FILTER_VALIDATE_INT` によって、整数として適切か確認する。
+
+```php
+if (!$id) {
+    exit("<div class='container mt-5'><p class='alert alert-danger'>記事が見つかりません。</p>
+          <p><a href='index.php' class='btn btn-primary'><i class='bi bi-arrow-left'></i> 記事一覧へ戻る</a></p></div>");
+}
+```
+→ 不正なIDだった場合、即終了しエラーメッセージを表示。
+
+```php
+$sql = "SELECT * FROM articles WHERE id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $id);
+$stmt->execute();
+$result = $stmt->get_result();
+$article = $result->fetch_assoc();
+```
+→ 対象記事の取得処理。プレースホルダ `?` に `$id` を差し込み、SQLインジェクションを防ぐ。
+
+```php
+if (!$article) {
+    exit("<div class='container mt-5'><p class='alert alert-danger'>記事が見つかりません。</p>
+          <p><a href='index.php' class='btn btn-primary'><i class='bi bi-arrow-left'></i> 記事一覧へ戻る</a></p></div>");
+}
+?>
+```
+→ 該当記事が存在しない場合のエラー処理。
+
+```html
+<input type="text" name="title" value="<?php echo htmlspecialchars($article['title']); ?>">
+```
+→ 記事タイトルをフォームに表示（エスケープ処理で安全性確保）
+
+```html
+<div class="mb-3">
+    <label for="content" class="form-label">本文:</label>
+    <textarea id="content" name="content" rows="5" class="form-control" required><?php echo htmlspecialchars($article['content']); ?></textarea>
+</div>
+```
+→ 本文も同様に安全にフォームへ埋め込み。
 
 📌 **スキルデモはこちら → [http://news-portfolio.rf.gd/post_form.html]**
