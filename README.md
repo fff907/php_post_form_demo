@@ -522,4 +522,64 @@ HTMLとして解釈されず安全に表示されます。これは **XSS（ク�
 
 また、`required` 属性があるため、空のままでは送信できず、未入力チェックが自動で行われます。
 
+### update.php
+
+投稿編集フォームから送信されたデータを受け取り、MySQL上の既存レコードを更新するPHPファイルです。
+
+- **使用技術**：PHP / MySQL（filter_input / prepare / bind_param / header）
+- 
+- **主な構造**：
+  - `filter_input()` による POSTデータの取得とバリデーション
+  - DBに接続後、該当記事の `title`・`content` を更新
+  - 成功時は `article.php` にリダイレクト
+
+- **コード解説**：
+
+```php
+$id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
+$title = filter_input(INPUT_POST, 'title', FILTER_SANITIZE_STRING);
+$content = filter_input(INPUT_POST, 'content', FILTER_SANITIZE_STRING);
+```
+→ フォームから送信された `id`, `title`, `content` を取得。`FILTER_VALIDATE_INT` で `id` が数値か検証、他2つは `FILTER_SANITIZE_STRING` でサニタイズ。
+
+```php
+if (!$id || !$title || !$content) {
+    exit("エラー: すべての項目を入力してください。");
+}
+```
+→ いずれかが未入力の場合は、処理を中断してエラーを表示。
+
+```php
+$sql = "UPDATE articles SET title = ?, content = ? WHERE id = ?";
+$stmt = $conn->prepare($sql);
+```
+→ 編集対象の記事の `title` と `content` を `id` に紐づけて更新するSQLを準備。
+
+```php
+if (!$stmt) {
+    exit("SQLエラー: " . $conn->error);
+}
+```
+→ SQL構文にエラーがある場合は処理を中断してエラー内容を出力。
+
+```php
+$stmt->bind_param("ssi", $title, $content, $id);
+```
+→ プレースホルダ（`?`）に値をバインド。`"ssi"`は「string, string, integer」の意味。
+
+```php
+if ($stmt->execute()) {
+    header("Location: article.php?id=" . $id);
+    exit();
+} else {
+    exit("エラー: " . $stmt->error);
+}
+```
+→ 更新に成功したら、該当記事の詳細ページにリダイレクト。失敗時はエラーを表示。
+
+> **セキュリティ補足**：  
+> `UPDATE` も `INSERT` と同様、ユーザー入力を直接SQL文に埋め込むのはNGです。  
+> `?`（プレースホルダ）を使って安全に値をバインドすることで、SQLインジェクションを防いでいます。
+
+
 📌 **スキルデモはこちら → [http://news-portfolio.rf.gd/post_form.html]**
