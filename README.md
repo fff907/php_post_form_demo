@@ -480,14 +480,26 @@ if (!$article) {
     exit("<div class='container mt-5'><p class='alert alert-danger'>記事が見つかりません。</p>
           <p><a href='index.php' class='btn btn-primary'><i class='bi bi-arrow-left'></i> 記事一覧へ戻る</a></p></div>");
 }
-?>
 ```
-→ `$article` が false ＝記事が見つからなかった場合に、`exit()` で処理を終了し、エラー表示に切り替えます。
+
+→ `$article` は `$result->fetch_assoc()` によって取得された記事データの「連想配列」です。  
+この値が空（＝null または false）だった場合は、該当する記事がデータベース上に存在しないということを意味します。
+
+つまり、`SELECT` 文を実行した結果が **0件（該当なし）**だったとき、この `if` 文が true になり、  
+`exit()` によって処理を途中で終了します。
+
+`exit()` の中には、Bootstrapで装飾されたHTMLが書かれており、  
+ユーザーには「記事が見つかりません」というメッセージと「戻る」ボタンが表示されます。
 
 ```html
 <input type="text" name="title" value="<?php echo htmlspecialchars($article['title']); ?>">
 ```
-→ 記事タイトルをフォームに表示（エスケープ処理で安全性確保）
+
+→ `$article['title']` には、編集対象の記事のタイトルが格納されています。  
+この値を `<input>` フィールドの `value` 属性に挿入することで、**フォーム表示時にすでに入力済みのような状態**にできます。
+
+`htmlspecialchars()` を使うことで、万が一タイトル内に `<` や `"` などのタグや記号が含まれていても、  
+HTMLとして解釈されず安全に表示されます。これは **XSS（クロスサイトスクリプティング）対策**として必須の処理です。
 
 ```html
 <div class="mb-3">
@@ -495,6 +507,13 @@ if (!$article) {
     <textarea id="content" name="content" rows="5" class="form-control" required><?php echo htmlspecialchars($article['content']); ?></textarea>
 </div>
 ```
-→ 本文も同様に安全にフォームへ埋め込み。
+
+→ 本文のデータ `$article['content']` を `<textarea>` 要素の中に直接埋め込んで表示しています。  
+`textarea` は `<input>` と違い、`value=""` ではなく、**タグの中に値を挿入する形式**です。
+
+ここでも `htmlspecialchars()` を使用しており、本文中のHTMLタグや記号がそのまま表示され、  
+悪意あるスクリプトの実行を防ぐ安全な出力になっています。
+
+また、`required` 属性があるため、空のままでは送信できず、未入力チェックが自動で行われます。
 
 📌 **スキルデモはこちら → [http://news-portfolio.rf.gd/post_form.html]**
