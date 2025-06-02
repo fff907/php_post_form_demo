@@ -724,4 +724,194 @@ $article = $result->fetch_assoc();
 - `nl2br()` は「New Line to BR」の略で、PHPの中で「改行を `<br>` に変換する関数」です。  
 - これは `textarea` に入力された改行を、そのまま表示画面に反映させたいときに使われます。
 
+---
+
+### 🛠 MySQLデータベースとテーブルの作成（phpMyAdmin）
+
+この投稿フォームは、MySQL上にテーブルを用意して、記事データ（タイトル・本文・投稿日時）を保存・取得できるように設計されています。
+
+#### 📌 準備手順（InfinityFree＋phpMyAdmin）
+
+1. InfinityFree 管理画面で「MySQL Databases」を開く  
+2. 任意のデータベース名（例：`news_db`）を作成  
+3. 接続情報（ホスト名・DB名・ユーザー名・パスワード）をメモ  
+4. 「phpMyAdmin」からそのDBを選択し、「SQL」タブへ移動
+
+#### 📌 使用したSQL（テーブル作成）
+
+```sql
+CREATE TABLE articles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+- `id`：自動採番される主キー
+- `title`：タイトル（255文字まで、空欄不可）
+- `content`：記事本文（空欄不可）
+- `created_at`：投稿日時。投稿時に自動で現在時刻が入る
+- `CHARACTER SET utf8mb4`：日本語を含むマルチバイト文字を正しく保存するための設定
+
+> 🔄 最初に作成したテーブルが文字化けしたため、`DROP TABLE IF EXISTS articles;` を実行してテーブルを削除し、再作成しました。
+
+### ✅ テストデータ追加
+
+以下のSQLを実行し、1件のテストデータを挿入しました。
+
+```sql
+INSERT INTO articles (title, content)
+VALUES ('最初の記事', 'これはテスト記事の内容です。');
+```
+
+### ✅ データの確認
+
+```sql
+SELECT * FROM articles;
+```
+
+結果：
+
+- テーブルは正常に作成され、データも保存・取得可能
+- 日本語も文字化けせず表示されることを確認
+
+> 💡 この作業により、「SQLでテーブルを定義し、レコードを追加・取得する」という一連の流れを実践できました。  
+> `filter_input()` や `prepare()` でのPHP側の接続処理とセットで理解すると、**簡易CMSの土台**がしっかり見えてきます。
+
+---
+
+### 🛠 SQLトラブルと対処：日本語文字化け・AUTO_INCREMENTミスへの対応
+
+作成した `articles` テーブルで、以下のような問題が発生しました：
+
+#### ❌ 3つの主な問題点
+
+1. `CHARSET=latin1` になっていた  
+　→ 日本語がすべて `????` に文字化けしてしまった  
+2. `id` カラムに `AUTO_INCREMENT` が付いていなかった  
+　→ 毎回 ID を手動で入力する必要があり、利便性がない  
+3. `INSERT` した文字列のエンコーディングがサーバーと合っておらず、文字化けを起こした
+
+#### ✅ 対応した修正SQL（phpMyAdminで実行）
+
+```sql
+-- ① テーブルの文字コードを UTF-8（utf8mb4）に変更
+ALTER TABLE `articles`
+CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+-- ② idカラムに AUTO_INCREMENT を追加
+ALTER TABLE `articles`
+MODIFY `id` INT(11) NOT NULL AUTO_INCREMENT;
+
+-- ③ 文字コードを明示してから日本語データをINSERT
+SET NAMES utf8mb4;
+INSERT INTO `articles` (`title`, `content`)
+VALUES ('最初の記事', 'これはテスト記事の内容です。');
+```
+
+#### 📌 結果
+
+- `SELECT * FROM articles;` を実行したところ、日本語が正しく保存・表示されるようになった
+- AUTO_INCREMENTが設定されたことで、IDは自動で振られるようになった
+- 文字コードの統一が重要であることを実感（特に日本語を扱うWebアプリでは必須）
+
+#### 🧹 テストデータ削除
+
+文字化けしていた最初の行は以下で削除：
+
+```sql
+DELETE FROM articles WHERE id = 1;
+```
+
+### 💬 学びメモ
+
+- **MySQLの初期設定がlatin1のことがある**ため、UTF-8設定は明示する癖をつける
+- **`AUTO_INCREMENT` を忘れると運用面で破綻**する（PHP側で毎回ID指定は現実的でない）
+- **SQL INSERT の直前に `SET NAMES utf8mb4;` を入れると安全**
+- **phpMyAdminの「SHOW CREATE TABLE articles;」で構造確認ができる**  
+　（ただし画面によっては全文コピーができないこともあるので注意）
+
+---
+
+### 🧪 実践トラブルとその対処（index.php 表示編）
+
+投稿された記事データを `index.php` で一覧表示しようとした際、以下のような問題が発生しました。
+
+#### ❌ 表示が「?????」になる（文字化け）
+
+```text
+記事一覧
+?????
+2025-03-13 01:26:35
+?????????????????
+```
+
+✅ **原因と対処**（2つ）
+
+- テーブルの照合順序（Collation）が `latin1_swedish_ci` だった  
+  → `utf8mb4_unicode_ci` に変更
+
+- データベース接続時に文字コードが指定されていなかった  
+  → `db_connect.php` に以下を追加
+
+```php
+$conn->set_charset("utf8mb4");
+```
+
+📌 **照合順序の修正SQL**
+
+```sql
+ALTER TABLE articles
+  CHANGE title title VARCHAR(255)
+  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL;
+
+ALTER TABLE articles
+  CHANGE content content MEDIUMTEXT
+  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL;
+```
+
+#### ❌ index.php にDB接続情報を重複して書いてしまい、エラー発生
+
+✅ **修正前（誤）**
+
+```php
+require_once 'db_connect.php';
+$conn = new mysqli(...); // ← 重複接続してしまっていた
+```
+
+✅ **修正後（正）**
+
+```php
+require_once 'db_connect.php'; // これだけでOK
+```
+
+#### ✅ 最終的に表示された内容（成功）
+
+```text
+記事一覧
+
+最初の記事  
+2025-03-13 04:22:14  
+これはテスト記事の内容です。
+```
+
+### 🛠 最終チェック：よくあるミスと対処まとめ
+
+- **「Access denied for user」**
+  → 接続情報（ユーザー名・パスワード・ホスト名）を再確認
+
+- **POSTデータが取得できない**
+  → `name="title"` や `$_POST['title']` の対応が正しいか確認  
+  → `print_r($_POST);` を使って中身をチェック
+
+- **日本語が「?????」になる**
+  → `set_charset("utf8mb4");` を使う  
+  → テーブルの照合順序を `utf8mb4_unicode_ci` に修正
+
+- **index.php で DB接続エラー**
+  → `require_once 'db_connect.php';` のみで接続を統一し、二重接続しない
+
+---
+
 📌 **スキルデモはこちら → [http://news-portfolio.rf.gd/post_form.html]**
